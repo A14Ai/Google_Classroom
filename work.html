@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Classroom</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #fff;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+        /* The background is always Google Classroom */
+        #work-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* The Game Pop-up Overlay */
+        #game-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .menu-content {
+            background: #202124;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 90%;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .game-btn {
+            background: #3c4043;
+            color: white;
+            border: 1px solid #5f6368;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .game-btn:hover {
+            background: #4285f4;
+            border-color: #4285f4;
+        }
+
+        #game-stage {
+            display: none;
+            width: 95vw;
+            height: 85vh;
+            background: #000;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        #game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .status-msg {
+            color: #9aa0a6;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <iframe id="work-frame" src="https://classroom.google.com"></iframe>
+
+    <div id="game-overlay">
+        <div class="menu-content" id="menu-ui">
+            <h2 style="color: white; margin: 0;">System Diagnostics</h2>
+            <div class="game-grid">
+                <button class="game-btn" onclick="openGame('https://flappybird.io')"><b>Flappy Bird</b></button>
+                <button class="game-btn" onclick="openGame('https://play2048.co')"><b>2048</b></button>
+                <button class="game-btn" onclick="openGame('https://suikagame.com')"><b>Fruit Merge</b></button>
+                <button class="game-btn" onclick="openGame('https://tetris.com/play-tetris')"><b>Tetris</b></button>
+                <button class="game-btn" onclick="openGame('https://www.google.com/logos/2010/pacman10-i.html')"><b>Pac-Man</b></button>
+                <button class="game-btn" onclick="openGame('https://snake.googlemaps.com/')"><b>Snake</b></button>
+                <button class="game-btn" onclick="openGame('https://doodlejump.io/')"><b>Doodle Jump</b></button>
+            </div>
+            <p class="status-msg">Press P to return to Classroom</p>
+        </div>
+
+        <div id="game-stage">
+            <iframe id="game-iframe" src=""></iframe>
+        </div>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('game-overlay');
+        const menuUI = document.getElementById('menu-ui');
+        const stage = document.getElementById('game-stage');
+        const gFrame = document.getElementById('game-iframe');
+        
+        let isLocked = false;
+
+        function openGame(url) {
+            menuUI.style.display = 'none';
+            stage.style.display = 'block';
+            gFrame.src = url;
+        }
+
+        function closePopUp() {
+            overlay.style.display = 'none';
+            gFrame.src = '';
+            menuUI.style.display = 'block';
+            stage.style.display = 'none';
+        }
+
+        function triggerLockout(seconds) {
+            closePopUp();
+            isLocked = true;
+            setTimeout(() => { isLocked = false; }, seconds * 1000);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            // ALT + P (Option + P)
+            if (e.altKey && e.code === 'KeyP') {
+                e.preventDefault();
+                if (isLocked) return;
+
+                if (overlay.style.display === 'flex') {
+                    // If playing or menu open, trigger 15s lockout
+                    triggerLockout(15);
+                } else {
+                    overlay.style.display = 'flex';
+                }
+            }
+
+            // P key (Close menu only)
+            if (e.key.toLowerCase() === 'p' && overlay.style.display === 'flex' && stage.style.display === 'none') {
+                closePopUp();
+            }
+
+            // L Key (Boss Key - 1 Minute Lockout)
+            if (e.key.toLowerCase() === 'l' && !e.altKey) {
+                triggerLockout(60);
+            }
+
+            // ALT + L (Lockdown)
+            if (e.altKey && e.code === 'KeyL') {
+                e.preventDefault();
+                window.location.href = "https://classroom.google.com";
+            }
+        });
+
+        // Prevent Mac special characters
+        window.addEventListener('keypress', (e) => {
+            if (e.altKey) e.preventDefault();
+        });
+    </script>
+</body>
+</html>
